@@ -29,6 +29,18 @@ build_require("variables")
 
 imgext = imgext or ".png"
 
+--[[
+  testdir - all updated images
+  dirrdir - selective images, md5, and diff images (*.diff-n.png) updated or 
+            generated for failed or no md5 tests
+]] 
+local diffdir = testdir .. "/updated"
+if direxists(diffdir) then
+  cleandir(diffdir)
+else
+  mkdir(diffdir)
+end
+
 local md5 = require("md5")
 
 local function md5sum(str)
@@ -86,17 +98,32 @@ local function pdftoimg(path, pdf)
   run(path, cmd)
 end
 
-local function saveimgmd5(imgname, md5file, newmd5)
-  print("save md5 and image files for " .. imgname)
-  cp(imgname, testdir, testfiledir)
-  writefile(md5file, newmd5)
+-- backup - diffdir
+-- save   - testfiledir
+local function backup_new_md5(md5name, newmd5)
+  print("  backup new md5 " .. md5name)
+  writefile(diffdir .. "/" .. md5name, newmd5)
+end
+
+local function backup_img(imgname)
+  print("  backup image " .. imgname)
+  cp(imgname, testdir, diffdir)
+end
+
+-- save updated files to testfiledir
+local function save_img_and_md5(imgname, md5name)
+  print("  save image and md5 files for " .. imgname)
+  cp(imgname, diffdir, testfiledir)
+  cp(md5name, diffdir, testfiledir)
 end
 
 local function ppmcheck(job)
   local errorlevel
   local imgname = job .. imgext
-  local md5file = testfiledir .. "/" .. job .. ".md5"
+  local md5name = job .. ".md5"
+  local md5file = testfiledir .. "/" .. md5name
   local newmd5 = filesum(testdir .. "/" .. imgname)
+
   if fileexists(md5file) then
     local oldmd5 = readfile(md5file)
     if newmd5 == oldmd5 then
@@ -105,6 +132,10 @@ local function ppmcheck(job)
     else
       errorlevel = 1
       print("md5 check failed for " .. imgname)
+      backup_new_md5(md5name, newmd5)
+      backup_img(imgname)
+
+      -- "convert" from imagemagick
       local imgdiffexe = os.getenv("imgdiffexe")
       if imgdiffexe then
         local oldimg = abspath(testfiledir) .. "/" .. imgname
@@ -112,15 +143,17 @@ local function ppmcheck(job)
         local diffname = job .. ".diff.png"
         local cmd = imgdiffexe .. " " .. oldimg .. " " .. newimg
                     .. " -compose src " .. diffname
-        print("creating image diff file " .. diffname)
-        run(testdir, cmd)
+        print("  create image diff files " .. job .. ".diff-n.png")
+        run(diffdir, cmd)
       elseif arg[1] == "save" then
-        saveimgmd5(imgname, md5file, newmd5)
+        save_img_and_md5(imgname, md5name)
       end
     end
   else
     errorlevel = 0
-    saveimgmd5(imgname, md5file, newmd5)
+    backup_new_md5(md5name, newmd5)
+    backup_img(imgname) -- in case image is updated
+    save_img_and_md5(imgname, md5name)
   end
   return errorlevel
 end
