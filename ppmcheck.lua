@@ -67,16 +67,6 @@ local function writefile(name, sum)
   f:close()
 end
 
-local function getfiles(path, pattern)
-  local files = { }
-  for entry in lfs.dir(path) do
-    if match(entry, pattern) then
-     insert(files, entry)
-    end
-  end
-  return files
-end
-
 local function getimgopt(imgext)
   local imgopt = ""
   if imgext == ".png" then
@@ -160,12 +150,12 @@ end
 
 local function main()
   local errorlevel = 0
-  local pattern = "%" .. pdfext .. "$"
-  local files = getfiles(testdir, pattern)
+  local files = ordered_filelist(testdir, "*" .. pdfext)
   for _, v in ipairs(files) do
     pdftoimg(testdir, v)
     pattern = "^" .. jobname(v):gsub("%-", "%%-") .. "%-%d+%" .. imgext .. "$"
-    local imgfiles = getfiles(testdir, pattern)
+    glob = jobname(v) .. "-*" .. imgext
+    local imgfiles = ordered_filelist(testdir, glob)
     if #imgfiles == 1 then
       local imgname = jobname(v) .. imgext
       if fileexists(testdir .. "/" .. imgname) then
