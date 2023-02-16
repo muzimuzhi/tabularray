@@ -16,19 +16,75 @@
 \START
 \hrule\bigskip
 
-\BEGINTEST{testing expand option}
+
 \def\tblrbody{
  \hline
   20 & 30 & 40 \\
   50 & 60 & 70 \\
  \hline
-}
+}%
+\BEGINTEST{testing expand option, simple}
 \begin{tblr}[expand=\tblrbody]{ccc}
  \hline
   AA & BB & CC \\
   \tblrbody
   DD & EE & FF \\
   \tblrbody
+  GG & HH & II \\
+ \hline
+\end{tblr}
+\ENDTEST
+\qquad
+%
+\def\tblrbodya{
+ \hline
+  20 & 30 & 40 \\
+}%
+\def\tblrbodyb{
+  50 & 60 & 70 \\
+ \hline
+}%
+\BEGINTEST{testing expand option, clist value}
+\begin{tblr}[expand={\tblrbody, \tblrbodya, \tblrbodyb}]{ccc}
+ \hline
+  AA & BB & CC \\
+  \tblrbody
+  DD & EE & FF \\
+  \tblrbodya
+  \tblrbodyb
+  GG & HH & II \\
+ \hline
+\end{tblr}
+\ENDTEST
+
+\bigskip
+
+\BEGINTEST{testing expand option, empty and non-single items}
+\begin{tblr}[expand={\tblrbody, , \tblrbodya, abc, \tblrbodyb}]{ccc}
+ \hline
+  AA & BB & CC \\
+  \tblrbody
+  DD & EE & FF \\
+  \tblrbodya
+  \tblrbodyb
+  GG & HH & II \\
+ \hline
+\end{tblr}
+\ENDTEST
+\qquad
+%
+\def\tblrbodyc{
+  \tblrbodya
+  \tblrbodyb
+}%
+\BEGINTEST{testing expand option, expansion order}
+\begin{tblr}[expand={\tblrbodyc, \tblrbodya, \tblrbodyb}]{ccc}
+ \hline
+  AA & BB & CC \\
+  \tblrbodyc
+  DD & EE & FF \\
+  \tblrbodya
+  \tblrbodyb
   GG & HH & II \\
  \hline
 \end{tblr}
