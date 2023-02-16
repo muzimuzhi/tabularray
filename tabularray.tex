@@ -1607,6 +1607,9 @@ expand every occurrence of a specified macro \underline{once} before splitting t
 The macro \underline{can not} be defined with \verb!\NewDocumentCommand! or
 \verb!\NewExpandableDocumentCommand!, and \underline{can not} have optional argument.
 
+From version 2022E, \verb!expand! accepts a comma-separated list of macros and
+each of the (single) macro in that list will be expanded once in order.
+
 \begin{demohigh}
 \def\tblrbody{
  \hline
